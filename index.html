@@ -1,0 +1,442 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Island Trivia Night</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Figtree:wght@400;600;800&display=swap">
+<style>
+/* Layout: TV game-show board matched to the McGuinness Trivia Night flyer — navy halftone, bubble-pink wordmark, yellow values */
+:root{
+  --bg:#131a4a; --board:#1b2360; --tile:#252e78; --tile-hi:#323c95; --used:#0e1335;
+  --gold:#ffc727; --coral:#ff5ca8; --fg:#ffffff; --muted:#9aa3d6; --good:#3ecf8e; --bad:#ff5d6c;
+  --display:"Baloo 2", "Arial Rounded MT Bold", "Arial Black", sans-serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.045) 1.6px,transparent 1.6px);background-size:20px 20px;color:var(--fg);font-family:var(--body);font-size:16px;margin:0;padding-inline:16px;padding-block:16px 40px}
+.wrap{max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.eyebrow{margin:0;font-size:.72rem;font-weight:600;letter-spacing:.32em;text-transform:uppercase;color:var(--fg)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.8rem,4vw,3rem);line-height:1.05;margin:0;letter-spacing:.01em;color:var(--coral);text-wrap:balance;
+   text-shadow:2px 0 0 #fff,-2px 0 0 #fff,0 2px 0 #fff,0 -2px 0 #fff,2px 2px 0 #fff,-2px -2px 0 #fff,2px -2px 0 #fff,-2px 2px 0 #fff}
+h1 span{color:var(--coral)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+button{font-family:var(--body);font-weight:700;font-size:.95rem;border:0;border-radius:8px;padding:10px 14px;cursor:pointer;background:var(--tile);color:var(--fg)}
+button:hover{background:var(--tile-hi)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{background:transparent;border:2px solid var(--tile);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:.85rem}
+.tab[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:var(--bg)}
+.boardwrap{overflow-x:auto;border-radius:12px}
+.board{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:6px;background:#000;padding:6px;border-radius:12px;min-width:720px}
+.board.six{min-width:860px}
+.cat{background:var(--board);display:flex;align-items:center;justify-content:center;text-align:center;padding:14px 8px;min-height:90px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:clamp(.85rem,1.4vw,1.2rem);text-wrap:balance}
+.cell{background:var(--tile);border-radius:0;font-family:var(--display);font-weight:800;color:var(--gold);font-size:clamp(1.6rem,3.4vw,3rem);min-height:clamp(70px,10vw,120px);text-shadow:2px 3px 0 #0a0f2e;font-variant-numeric:tabular-nums}
+.cell:hover{background:var(--tile-hi)}
+.cell.used{background:var(--used);color:transparent;text-shadow:none;cursor:default}
+.finalbar{display:flex;justify-content:center}
+.finalbtn{background:var(--coral);color:#fff;font-family:var(--display);font-weight:800;font-size:1.3rem;padding:14px 28px;letter-spacing:.04em;border-radius:999px;box-shadow:0 0 0 3px #fff}
+.finalbtn:hover{background:#ff7ab8}
+.scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.team{background:var(--board);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.team input{background:transparent;border:0;border-bottom:1px dashed var(--muted);color:var(--fg);font:800 1rem var(--body);text-transform:uppercase;letter-spacing:.05em;width:100%}
+.team .pts{font-family:var(--display);font-weight:800;font-size:2rem;color:var(--gold);font-variant-numeric:tabular-nums}
+.team .pts.neg{color:var(--bad)}
+.team .row{display:flex;gap:6px}
+.team .row button{flex:1;padding:6px;font-size:.8rem;background:var(--used)}
+.note{color:var(--muted);font-size:.85rem;margin:0}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* Clue overlay */
+.ov{position:fixed;inset:0;background:var(--board);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 20px) 20px calc(env(safe-area-inset-bottom,0px) + 20px);gap:16px;z-index:10;overflow:auto}
+.ov .meta{display:flex;justify-content:space-between;gap:12px;color:var(--gold);font-weight:800;text-transform:uppercase;letter-spacing:.08em;flex-wrap:wrap}
+.ov .clue{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,4.4vw,4rem);line-height:1.2;text-wrap:balance;text-transform:uppercase;text-shadow:3px 4px 0 #0a0f2e;padding:10px}
+.ov .ans{text-align:center;font-size:clamp(1.3rem,3vw,2.4rem);font-weight:800;color:var(--gold)}
+.dd{font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,8vw,6rem);color:var(--coral);text-align:center;text-shadow:3px 0 0 #fff,-3px 0 0 #fff,0 3px 0 #fff,0 -3px 0 #fff,3px 3px 0 #fff,-3px -3px 0 #fff,3px -3px 0 #fff,-3px 3px 0 #fff}
+.ctrl{display:flex;flex-direction:column;gap:12px;align-items:center}
+.amt{display:flex;gap:8px;align-items:center;font-weight:700}
+.amt input{width:120px;font:800 1.1rem var(--body);padding:8px;border-radius:8px;border:2px solid var(--tile-hi);background:var(--bg);color:var(--fg);font-variant-numeric:tabular-nums}
+.judge{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.judge .t{display:flex;align-items:center;gap:4px;background:var(--bg);border-radius:8px;padding:4px 4px 4px 10px}
+.judge .t span{font-weight:800;font-size:.9rem;text-transform:uppercase;max-width:12ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.judge .ok{background:var(--good);color:#04210f;padding:8px 12px}
+.judge .no{background:var(--bad);color:#2a0308;padding:8px 12px}
+.judge .wager{width:80px;font:700 .95rem var(--body);padding:6px;border-radius:6px;border:1px solid var(--tile-hi);background:var(--board);color:var(--fg)}
+.primary{background:var(--gold);color:#131a4a;font-size:1.1rem;padding:12px 22px}
+.primary:hover{background:#ffd47c}
+@media (prefers-reduced-motion:no-preference){.ov{animation:pop .25s ease-out}@keyframes pop{from{transform:scale(.96);opacity:.6}to{transform:none;opacity:1}}}
+/* Buzzer side panel: the board and clue screen shrink left, the buzzer site fills the right */
+:root{--bz:0px}
+body.bz-on{--bz:clamp(320px,32vw,560px);padding-right:calc(var(--bz) + 16px)}
+.ov{right:var(--bz)}
+.bzsetup{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--board);border-radius:10px;padding:12px}
+.bzsetup label{font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:.8rem;color:var(--gold)}
+.bzsetup input{flex:1 1 260px;min-width:0;font:600 1rem var(--body);padding:10px;border-radius:8px;border:2px solid var(--tile-hi);background:var(--bg);color:var(--fg)}
+.bzsetup .note{flex-basis:100%}
+.bzpanel{position:fixed;top:0;right:0;bottom:0;width:var(--bz);display:flex;flex-direction:column;background:var(--used);border-left:4px solid var(--coral);z-index:20;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bzhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px}
+.bzhead span{font-family:var(--display);font-weight:800;font-size:1.3rem;color:var(--coral)}
+.bzhead a{color:var(--muted);font-weight:600;font-size:.85rem}
+.bzpanel iframe{flex:1;width:100%;border:0;background:#fff}
+@media (max-width:800px){body.bz-on{--bz:0px;padding-right:16px}.bzpanel{display:none}}
+/* Join screen: big QR + game code, sized to scan from the couch */
+.qrov{position:fixed;inset:0;right:var(--bz);background:var(--bg);background-image:radial-gradient(rgba(255,255,255,.045) 1.6px,transparent 1.6px);background-size:20px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:15;padding:20px;overflow:auto}
+.qrov h2{margin:0;font-family:var(--display);font-weight:800;color:var(--coral);font-size:clamp(1.8rem,4.5vw,3.4rem);text-align:center;text-wrap:balance;
+   text-shadow:2px 0 0 #fff,-2px 0 0 #fff,0 2px 0 #fff,0 -2px 0 #fff,2px 2px 0 #fff,-2px -2px 0 #fff,2px -2px 0 #fff,-2px 2px 0 #fff}
+.qrov img{width:min(52vh,70vw);max-width:100%;aspect-ratio:1;background:#fff;padding:14px;border-radius:16px;image-rendering:pixelated}
+.qrcode{display:flex;flex-direction:column;align-items:center;gap:4px}
+.qrcode label{font-weight:800;text-transform:uppercase;letter-spacing:.2em;font-size:.85rem;color:var(--fg)}
+.qrcode input{width:min(90vw,9ch);min-width:0;text-align:center;font:800 clamp(2rem,6vw,4rem) var(--display);letter-spacing:.12em;color:var(--gold);background:transparent;border:0;border-bottom:3px dashed var(--muted);padding:0 4px;font-variant-numeric:tabular-nums}
+.qrcode input::placeholder{color:var(--muted);font-size:1.2rem;letter-spacing:0;font-family:var(--body)}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">The McGuinness Household Presents</p>
+      <h1>Trivia <span>Night</span></h1>
+    </div>
+    <div class="tools">
+      <button id="qrBtn" type="button">Join QR</button>
+      <button id="bzBtn" type="button">Buzzer</button>
+      <button id="fs" type="button">Full screen</button>
+      <span class="confirm" id="resetWrap"><button id="reset" type="button">Reset everything</button></span>
+    </div>
+  </header>
+  <div class="bzsetup" id="bzSetup" hidden>
+    <label for="bzUrl">Buzzer host link</label>
+    <input id="bzUrl" type="url" placeholder="Paste the link from your buzzer host page (https://…)">
+    <button class="primary" id="bzShow" type="button">Show buzzer</button>
+    <button id="bzHide" type="button">Hide buzzer</button>
+    <p class="note" id="bzMsg">Copy the address of the page that shows who buzzed in, then paste it here.</p>
+  </div>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+  <div class="boardwrap"><div class="board" id="board"></div></div>
+  <div class="finalbar"><button class="finalbtn" id="finalBtn" type="button">Final Jeopardy</button></div>
+  <section>
+    <div class="scores" id="scores"></div>
+  </section>
+  <p class="note">Scores carry across all 5 games for an overall champion. Tap a value to open a clue. One hidden Daily Double per game. Press Esc to close a clue.</p>
+  <div class="tools"><button id="addTeam" type="button">+ Add team</button></div>
+</div>
+
+<div class="ov" id="ov" hidden></div>
+
+<div class="qrov" id="qrOv" hidden role="dialog" aria-label="Join the buzzer">
+  <h2>Scan to join the buzzer</h2>
+  <img alt="QR code that opens buzzin.live/play" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAwIAAAL5CAYAAAADnpPWAAABSGlDQ1BJQ0MgUHJvZmlsZQAAKJF9kM9KQkEUxj/NENSoRbRqcREKAgu5ha3NRQQtTIss2lzH67W42jDeiHY9RPQI0Ru4kegRgqCgNq3bBm5Kpm+00v7QDIfvx5nzHc4cIJxwpPQjAOqNQBVWV6zSzq4VfUaMdwzjSDqiKbP5/DpL8KnfT+cOIaO386bX7/d/T6ziNgX1jWELqQIglCbnjwNp+JQ8qTgU+cyw1+dLw+U+t3s1m4Uc+YY8IWpOhfxETpWH8t4Q1/0j8TGDmT7hNraK1CnGNIoQcCERQFEtbMDGMnf0t2ep58nhkI4TOvbhoUavhSwzEn6vxxoa7LqAFNlGmpExu/65w0HuYA/IzAHhmUGuWgKuFL87VDebBOIu0H6UjnK+NhvqRJrVRbvP8RYweq71yzYQZc/uvdavLa27F8DIA3DdeQfbjVs+LiHEagAAAFZlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA5KGAAcAAAASAAAARKACAAQAAAABAAADAqADAAQAAAABAAAC+QAAAABBU0NJSQAAAFNjcmVlbnNob3QWFASwAAAB1mlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyI+CiAgICAgICAgIDxleGlmOlBpeGVsWURpbWVuc2lvbj43NjE8L2V4aWY6UGl4ZWxZRGltZW5zaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFhEaW1lbnNpb24+NzcwPC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6VXNlckNvbW1lbnQ+U2NyZWVuc2hvdDwvZXhpZjpVc2VyQ29tbWVudD4KICAgICAgPC9yZGY6RGVzY3JpcHRpb24+CiAgIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CrDnVpkAAEAASURBVHgB7dsPjN51fQfwb9vrH3qt17La2opwRi2xI2WWlYSUdhskuBiLRHNsRFeWsmWEGFLbLCvRbKthFCHo4phDtF2mcck0jM5hXFlcMg8c07SWCGV0OAtsBVr+FK/XP/TP7X5ECOrRuz7P7/f5/Xv9kgvt8zy/7+f7eX2+99zzruekkdEruQgQIECAAAECBAgQaJXA5FZ1q1kCBAgQIECAAAECBF4VEAQcBAIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEASc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lH017Tp58mTTWtIPAQI5CcS8u+a0WcsQIECAAAECBAgQIJCPgCCQj6NVCBAgQIAAAQIECNRKQBCo1bhslgABAgQIECBAgEA+AoJAPo5WIUCAAAECBAgQIFArAUGgVuOyWQIECBAgQIAAAQL5CAgC+ThahQABAgQIECBAgECtBASBWo3LZgkQIECAAAECBAjkIyAI5ONoFQIECBAgQIAAAQK1EhAEajUumyVAgAABAgQIECCQj4AgkI+jVQgQIECAAAECBAjUSkAQqNW4bJYAAQIECBAgQIBAPgKCQD6OViFAgAABAgQIECBQKwFBoFbjslkCBAgQIECAAAEC+QgIAvk4WoUAAQIECBAgQIBArQQEgVqNy2YJECBAgAABAgQI5CMgCOTjaBUCBAgQIECAAAECtRIQBGo1LpslQIAAAQIECBAgkI+AIJCPo1UIECBAgAABAgQI1EpAEKjVuGyWAAECBAgQIECAQD4CgkA+jlYhQIAAAQIECBAgUCsBQaBW47JZAgQIECBAgAABAvkICAL5OFqFAAECBAgQIECAQK0EBIFajctmCRAgQIAAAQIECOQjIAjk42gVAgQIECBAgAABArUS6KnVblu62d7e3rR48eKWdt992/39/d0vYgUCHQqcOnUq7dq1q8O7z+y2l19+Oey9Iqu1c+fOM9tgh6/ODCOuvr6+tGDBgohS6YUXXnj1K6SYIl0J+BnSFV/KPsO4qisgCFR3Nq/vbMWKFenxxx9//e/+QIBAfQSOHj2aLrroopANr169Ouy94sorr0zr168P6SuqyNKlS9N3v/vdkHLXXntt+spXvhJSS5HuBLZv397dAu4mUGEBvxpU4eHYGgECBAgQIECAAIGiBASBomStS4AAAQIECBAgQKDCAoJAhYdjawQIECBAgAABAgSKEhAEipK1LgECBAgQIECAAIEKCwgCFR6OrREgQIAAAQIECBAoSkAQKErWugQIECBAgAABAgQqLCAIVHg4tkaAAAECBAgQIECgKAFBoChZ6xIgQIAAAQIECBCosIAgUOHh2BoBAgQIECBAgACBogQEgaJkrUuAAAECBAgQIECgwgKCQIWHY2sECBAgQIAAAQIEihIQBIqStS4BAgQIECBAgACBCgsIAhUejq0RIECAAAECBAgQKEpAEChK1roECBAgQIAAAQIEKiwgCFR4OLZGgAAB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CBAgQIAAgWoJCALVmofdECBAgAABAgQIEAgREARCmBUhQIAAAQIECBAgUC0BQaBa87AbAgQIECBAgAABAiECgkAIsyIECBAgQIAAAQIEqiUgCFRrHnZDgAABAgQIECBAIERAEAhhVoQAAQIECBAgQIBAtQQEgWrNw24IECBAgAABAgQIhAgIAiHMihAgQIAAAQIECBColoAgUK152A0BAgQIECBAgACBEAFBIIRZEQIECBAgQIAAAQLVEhAEqjUPuyFAgAABAgQIECAQIiAIhDArQoAAAQIECBAgQKBaAoJAteZhNwQIECBAgAABAgRCBASBEGZFCBAgQIAAAQIECFRLQBCo1jzshgABAgQIECBAgECIgCAQwqwIAQIECBAgQIAAgWoJCALVmofdECBAgAABAgQIEAgREARCmBUhQIAAAQIECBAgUC2Bnmptp167+eu//uvU29tb+KafeOKJwmu8VmDZsmXpggsueO2vhf73nnvuSdOnTy+0Rrb4vn37Cq/xWoHMLjOMuL797W+nAwcORJQKq7F06dK0Zs2akHr9/f0hdaZMmRLWU19fX7r99ttD+oossm7dujR16tTCS2ZnIur8PfTQQ2nPnj2F95QVuPvuu9OcOXMKr3X48OEwvxMnToSd9WuvvTbNnz+/cL9sRlHnb8WKFYX3E10g+zz2kY98JKTsJZdcElInpMhIw66BgYGRUThfHRps2rQp7ESM/tBt3JxGP7CE+Y1+aA7xW7hwYVhPCnUnsGXLlpAzEf0eOzw83B1MBe8e/cDXuFll70lRV/ZeG3UOd+zYEdVWI+ssX748ZFZnn312I/2KbsqvBoXELUUIECBAgAABAgQIVEtAEKjWPOyGAAECBAgQIECAQIiAIBDCrAgBAgQIECBAgACBagkIAtWah90QIECAAAECBAgQCBEQBEKYFSFAgAABAgQIECBQLQFBoFrzsBsCBAgQIECAAAECIQKCQAizIgQIECBAgAABAgSqJSAIVGsedkOAAAECBAgQIEAgREAQCGFWhAABAgQIECBAgEC1BASBas3DbggQIECAAAECBAiECAgCIcyKECBAgAABAgQIEKiWgCBQrXnYDQECBAgQIECAAIEQAUEghFkRAgQIECBAgAABAtUSEASqNQ+7IUCAAAECBAgQIBAiIAiEMCtCgAABAgQIECBAoFoCgkC15mE3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mpCeIosMDw+H+Y1+MAprLavVtO+rlStXhvlFFlq4cGHjZrVx48YwwtHQFuLX398f1tOmTZtCemrae8Rr/QwMDITNquhCfjVodKouAgQIECBAgAABAm0TEATaNnH9EiBAgAABAgQIEBgVEAQcAwIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRToaWHPubV8zTXXpOHh4dzWe7OFzj///HT77be/2dO5Pv7FL34xfetb38p1zTdb7Atf+EI655xz3uzpWj5+xRVXpN/5nd8J2fvixYtD6jS1yCc/+cn0ox/9qPD2Tp48WXiNMgqsW7cuXXXVVWWULqzms88+m6688srC1n/jwtddd1360Ic+9MaHCvvzZz/72XT48OHC1n9t4SeeeCJt3rz5tb8W+t9t27alRx99tNAary2+f//+1/7YmP9m37tN+/k7NDSUsvcl15kJCAJn5vVzr77//vvTiy+++HOPFfGX7IdT1PXDH/4w/fM//3NIuc985jMhdSKLLFmyJK1duzaypFodCgwODqbsy9WZwGWXXdbZjRW+K/twmQXEiGvlypURZV6t8bu/+7shtR544IGwIPBf//VfKftydSawdOnSlH016Tpw4IAg0MFA/WpQB2huIUCAAAECBAgQIFB3AUGg7hO0fwIECBAgQIAAAQIdCAgCHaC5hQABAgQIECBAgEDdBQSBuk/Q/gkQIECAAAECBAh0ICAIdIDmFgIECBAgQIAAAQJ1FxAE6j5B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7bXXhrTX19eXbrvttpBau3btCuvr7rvvTtOnTy+8r6ynz33uc4XXyQo89NBDIXWyIhs2bEi9vb1h9SIK7dy5M6JMaI3svTbqvSK0saBix44dC6rUsDIjrsoLbN++fWT02IV8bdq0Kcyjv78/pKfFixeH9bRx48aQnrLzMDg4GNLX3r17w3qKOudNrbN69eqQM5EVyWpFOQ4PD4f0de+994b1FGWnTszPTs7tch4YGAh5T4oo4leDRr97XQQIECBAgAABAgTaJiAItG3i+iVAgAABAgQIECAwKiAIOAYECBAgQIAAAQIEWiggCLRw6FomQIAAAQIECBAgIAg4AwQIECBAgAABAgRaKCAItHDoWiZAgAABAgQIECAgCDgDBAgQIECAAAECBFooIAi0cOhaJkCAAAECBAgQICAIOAMECBAgQIAAAQIEWiggCLRw6FomQIAAAQIECBAgIAg4AwQIECBAgAABAgRaKCAItHDoWiZAgAABAgQIECAgCDgDBAgQIECAAAECBFooIAi0cOhaJkCAAAECBAgQICAIOAMECBAgQIAAAQIEWiggCLRw6FomQIAAAQIECBAgIAg4AwQIECBAgAABAgRaKCAItHDoWiZAgAABAgQIECAgCDgDBAgQIECAAAECBFooIAi0cOhaJkCAAAECBAgQICAIOAMECBAgQIAAAQIEWiggCLRw6FomQIAAAQIECBAgIAg4AwQIECBAgAABAgRaKCAItHDoWiZAgAABAgQIECAgCDgDBAgQIECAAAECBFoo0NPCnmvX8qpVq9LevXtD9j137tyQOlmRBx98MB0/frzwetOmTSu8xmsFNm7cmK6//vrX/lrof9/2trcVun4Zi3/kIx9Jd9xxRxmlG1HzvvvuS4sWLQrp5ZOf/GT6q7/6q5BaZ511Vkid97///WHvtRs2bEj33HNPSF/Ze+3b3/72kFpNLHLZZZel//mf/ym8tXe84x1pcHCw8DpZgc9//vPps5/9bEitr371q2nlypWF13rxxRfTsmXLCq/TtAKCQA0mOmPGjHTeeefVYKdntsWoDyxntqvuXt3X15eyL1dnAr29vY08651pnPld2QfmZ5555sxv7OCOrFbT3pcie8rOetSVhYCmzSrKLqvT0xPzUWnKlClhc4r8OTV//vyQvmbOnBl5LBpTy68GNWaUGiFAgAABAgQIECAw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nX/++alpZ/Af/uEfUvblIuBXg5wBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0UEARaOHQtEyBAgAABAgQIEBAEnAECBAgQIECAAAECLRQQBFo4dC0TIECAAAECBAgQEAScAQIECBAgQIAAAQItFBAEWjh0LRMgQIAAAQIECBAQBJwBAgQIECBAgAABAi0U6Glhz1omQKCiAo888kj69Kc/HbK7973vfWnJkiUhtaJ6evjhh0P6iS5yyy23pBMnThRe9p3vfGf6vd/7vcLrZAXuu+++tHPnzpBaV111VTp16lThtZ577rm0bdu2wus0tcDcuXPT1VdfHdLeD3/4w/T9738/pFZUkd7e3vSxj30spNzFF18cUieiiCAQoawGAQITEsg+GEV9OLr33ntT9gGp6Ovw4cMp+wHl6lxg8+bN6dChQ50vMME7V65cGRYEvvGNb6SvfOUrE9xZdy/bu3dvOu+887pbZAJ3P/DAA4LABJze7CV9fX3prrvuerOnc308+8eJpgWB6dOnh/nlOoySF/OrQSUPQHkCBAgQIECAAAECZQgIAmWoq0mAAAECBAgQIECgZAFBoOQBKE+AAAECBAgQIECgDAFBoAx1NQkQIECAAAECBAiULCAIlDwA5QkQIECAAAECBAiUISAIlKGuJgECBAgQIECAAIGSBQSBkgegPAECBAgQIECAAIEyBASBMtTVJECAAAECBAgQIFCygCBQ8gCUJ0CAAAECBAgQIFCGgCBQhrqaBAgQIECAAAECBEoWEARKHoDyBAgQIECAAAECBMoQEATKUFeTAAECBAgQIECAQMkCgkDJA1CeAAEC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">
+  <div class="qrcode"><label for="qrCode">Game code</label><input id="qrCode" type="text" autocomplete="off" spellcheck="false" placeholder="Host: type code"></div>
+  <p class="note">Or go to buzzin.live/play and enter the code. Pick your team, then wait for the host.</p>
+  <button class="primary" id="qrClose" type="button">Back to the board</button>
+</div>
+
+<aside class="bzpanel" id="bzPanel" hidden>
+  <div class="bzhead"><span>Buzzer</span><a id="bzOpen" href="#" target="_blank" rel="noopener">Open in new tab</a></div>
+  <iframe id="bzFrame" title="Buzzer" allow="autoplay; clipboard-write"></iframe>
+</aside>
+
+<script>
+const GAMES=[
+{name:"Island Night",dd:[1,3],cats:[
+ {t:"Hawaii Hodgepodge",q:[
+  ["Nicknamed \"The Big Island,\" its official name is simply this","Hawaiʻi (the island of Hawaiʻi)"],
+  ["Honolulu's famous hotel-lined beach neighborhood, next to Diamond Head","Waikīkī"],
+  ["This king united the Hawaiian Islands under one rule by 1810","Kamehameha I (Kamehameha the Great)"],
+  ["By volume, this Big Island mountain is the largest active volcano on Earth","Mauna Loa"],
+  ["The name of Hawaii's capital city means this in Hawaiian","Sheltered bay (protected harbor)"]]},
+ {t:"Island Food",q:[
+  ["Cubes of marinated raw fish, usually ahi, sold by the pound","Poke"],
+  ["This nut, grown on the islands, fills Hawaii's most famous cookies and chocolates","Macadamia"],
+  ["Kālua pig is slow-cooked underground in this traditional earthen oven","Imu"],
+  ["Lomi-lomi salmon gets its name because the fish is prepared this way, by hand","Massaged (kneaded)"],
+  ["Lau lau is wrapped in ti leaves on the outside and these edible taro leaves on the inside","Lūʻau leaves"]]},
+ {t:"Famous Landmarks",q:[
+  ["This copper statue of a woman holding a torch stands in New York Harbor","The Statue of Liberty"],
+  ["Big Ben's clock tower is part of this London building where lawmakers meet","The Houses of Parliament (Palace of Westminster)"],
+  ["The Christ the Redeemer statue stretches its arms over this Brazilian city","Rio de Janeiro"],
+  ["This Mughal emperor built the Taj Mahal as a tomb for his wife","Shah Jahan"],
+  ["Stonehenge stands on this plain in southern England","Salisbury Plain"]]},
+ {t:"Animal Kingdom",q:[
+  ["The tallest animal on land","Giraffe"],
+  ["A baby kangaroo is called this","A joey"],
+  ["This endangered seal, found only in Hawaii, is named after a religious figure","The Hawaiian monk seal"],
+  ["The humpback whales that winter off Hawaii spend summers feeding near this U.S. state","Alaska"],
+  ["With a wingspan up to 11 feet, this seabird has the largest wingspan of any living bird","The wandering albatross"]]},
+ {t:"Name That Movie",q:[
+  ["A lion cub flees after his father's death, then returns to reclaim Pride Rock","The Lion King"],
+  ["A boy hides a stranded alien in his closet and helps him phone home","E.T. the Extra-Terrestrial"],
+  ["A nanny floats in on an umbrella to care for the Banks children in London","Mary Poppins"],
+  ["A Philadelphia club boxer gets a shot at champion Apollo Creed","Rocky"],
+  ["A reporter tries to learn the meaning of a newspaper tycoon's dying word, \"Rosebud\"","Citizen Kane"]]}],
+ final:{cat:"Hawaiian Royalty",clue:"Known as the \"Merrie Monarch,\" this king built ʻIolani Palace and is honored by a famous hula festival in Hilo",ans:"King David Kalākaua"}},
+
+{name:"Pop Culture Party",dd:[3,2],cats:[
+ {t:"The 2000s",q:[
+  ["The first film in this boy-wizard franchise hit theaters in 2001","Harry Potter"],
+  ["Apple's 2001 music player promised \"1,000 songs in your pocket\"","iPod"],
+  ["This 2006 Disney Channel movie about Troy and Gabriella became a phenomenon","High School Musical"],
+  ["Paris Hilton and Nicole Richie tried farm life on this 2003 reality show","The Simple Life"],
+  ["The first-ever tweet, in 2006, read \"just setting up my\" this, the site's original five-letter name","twttr"]]},
+ {t:"Emoji Decode",q:[
+  ["🧜‍♀️ 🌊 🦀","The Little Mermaid"],
+  ["🤠 🧸 🚀","Toy Story"],
+  ["🎈 🏠 👴","Up"],
+  ["🐀 👨‍🍳 🇫🇷","Ratatouille"],
+  ["🌧️ 🕺 ☂️","Singin' in the Rain"]]},
+ {t:"TV Show Settings",q:[
+  ["Jerry's Manhattan apartment and Monk's Café, in a \"show about nothing\"","Seinfeld"],
+  ["A special police task force takes on crime in Honolulu","Hawaii Five-0"],
+  ["Sunnydale High School, which happens to sit on a Hellmouth","Buffy the Vampire Slayer"],
+  ["The drug trade and the police in Baltimore, seen from both sides","The Wire"],
+  ["The town of Dillon, Texas, and its high school football team, the Panthers","Friday Night Lights"]]},
+ {t:"Guess the Year",q:[
+  ["COVID-19 lockdowns begin around the world","2020"],
+  ["Barack Obama is elected president for the first time","2008"],
+  ["Pearl Harbor is attacked","1941"],
+  ["The space shuttle Challenger breaks apart shortly after launch","1986"],
+  ["Captain James Cook becomes the first European to reach the Hawaiian Islands","1778"]]},
+ {t:"Sports Legends",q:[
+  ["This boxer said he could \"float like a butterfly, sting like a bee\"","Muhammad Ali"],
+  ["In 1997 this golfer won the Masters at age 21, by a record 12 strokes","Tiger Woods"],
+  ["This gymnast has won more World Championship medals than anyone in history","Simone Biles"],
+  ["This Yankee's 56-game hitting streak in 1941 has never been matched","Joe DiMaggio"],
+  ["Born in Waimānalo, Oahu, this sumo wrestler became the first foreign-born yokozuna","Akebono (Chad Rowan)"]]}],
+ final:{cat:"Famous Firsts",clue:"In 1961 this Soviet cosmonaut became the first human to travel into space",ans:"Yuri Gagarin"}},
+
+{name:"Brainiac",dd:[2,4],cats:[
+ {t:"World Capitals",q:[
+  ["France","Paris"],["Egypt","Cairo"],["Brazil","Brasília"],["Switzerland","Bern"],["Myanmar","Naypyidaw"]]},
+ {t:"Inventors",q:[
+  ["With Steve Wozniak, he started Apple in a California garage in 1976","Steve Jobs"],
+  ["Famous for relativity, this physicist also co-patented a refrigerator","Albert Einstein"],
+  ["She coined the word \"radioactivity\" and won Nobel Prizes in two different sciences","Marie Curie"],
+  ["This American invented the cotton gin in 1793","Eli Whitney"],
+  ["This Hungarian newspaper editor invented the modern ballpoint pen in the 1930s","László Bíró"]]},
+ {t:"Science Myths Busted",q:[
+  ["Myth: you must wait 30 minutes after eating before doing this","Swimming"],
+  ["Myth: this big bird buries its head in the sand when scared","Ostrich"],
+  ["Myth: cracking these causes arthritis","Knuckles"],
+  ["Myth: this Italian dropped cannonballs from the Leaning Tower of Pisa to test gravity","Galileo"],
+  ["Myth: this Roman emperor fiddled while Rome burned","Nero"]]},
+ {t:"Mythology",q:[
+  ["Roman god of war who shares his name with a planet","Mars"],
+  ["Norse trickster god, Thor's adopted brother in the Marvel movies","Loki"],
+  ["Hawaiian demigod who lassoed the sun and fished up the islands","Māui"],
+  ["Greek goddess of love, said to be born from sea foam","Aphrodite"],
+  ["In Greek myth, this ferryman rows the dead across the River Styx","Charon"]]},
+ {t:"Languages",q:[
+  ["\"Gracias\" means thank you in this language","Spanish"],
+  ["This ancient language was revived as an everyday spoken language in Israel","Hebrew"],
+  ["\"Hawaiʻi Creole English\" is the linguists' name for what locals call this","Pidgin"],
+  ["The Philippines' official national language, standardized from Tagalog in the 20th century","Filipino (accept Tagalog)"],
+  ["Created in 1887, this invented language was meant to be a universal second language","Esperanto"]]},
+ {t:"Philosophy & Religion",q:[
+  ["Prayer, fasting and pilgrimage are among the Five Pillars of this religion","Islam"],
+  ["This Indian prince became known as \"the Buddha,\" or the enlightened one","Siddhartha Gautama"],
+  ["This Greek philosopher was sentenced to death by drinking hemlock in 399 BC","Socrates"],
+  ["\"I think, therefore I am\" was written by this French philosopher","René Descartes"],
+  ["Founded by Guru Nanak in the 1400s in Punjab, it is the world's fifth-largest religion","Sikhism"]]}],
+ final:{cat:"Space Exploration",clue:"This NASA rover landed on Mars in 2021 carrying a small helicopter named Ingenuity",ans:"Perseverance"}},
+
+{name:"Word Nerds & Military Life",dd:[4,3],cats:[
+ {t:"Before & After",q:[
+  ["A Lady Gaga hit about hiding your hand + Mark Zuckerberg's social network","Poker Facebook"],
+  ["Oahu's famous snorkeling bay + Northern California's tech region","Hanauma Bay Area"],
+  ["The Big Island's famous coffee + a glossy oversized book for the living room","Kona Coffee Table Book"],
+  ["A plastic ring you spin around your hips + a 1994 documentary about two Chicago basketball hopefuls","Hula Hoop Dreams"],
+  ["The British explorer killed at Kealakekua Bay + a self-governing Pacific nation of 15 islands","Captain Cook Islands"]]},
+ {t:"Rhyme Time",q:[
+  ["A large hog","Big pig"],
+  ["A pretend reptile","Fake snake"],
+  ["A lawyer who is also a bird of prey","Legal eagle"],
+  ["Hot coffee from a volcano","Lava java"],
+  ["A Shakespearean king's ale","Lear beer"]]},
+ {t:"Starts with Q",q:[
+  ["A line of people waiting their turn","Queue"],
+  ["A group of four singers, like a barbershop group","Quartet"],
+  ["The most common mineral in beach sand","Quartz"],
+  ["This smiling Australian marsupial is famous for selfies","Quokka"],
+  ["Cancún and Tulum are in this Mexican state","Quintana Roo"]]},
+ {t:"Military Lingo",q:[
+  ["MRE stands for this","Meal, Ready-to-Eat"],
+  ["3:00 PM in military time","1500 (fifteen hundred)"],
+  ["The Navy's on-base store, the NEX, is short for this","Navy Exchange"],
+  ["\"Hooyah\" is the Navy's version of this Marine Corps battle cry","Oorah"],
+  ["DEERS, the system that enrolls spouses for benefits, stands for this","Defense Enrollment Eligibility Reporting System"]]},
+ {t:"Food & Drink Around the World",q:[
+  ["Tacos and guacamole come from this country","Mexico"],
+  ["Naan, tikka masala and samosas come from this country","India"],
+  ["Pierogi, dumplings stuffed with potato or cheese, come from this country","Poland"],
+  ["Injera, a spongy sourdough flatbread, is the staple of this East African country","Ethiopia"],
+  ["This boat-shaped Georgian bread is filled with cheese and topped with an egg","Khachapuri"]]}],
+ final:{cat:"U.S. Presidents",clue:"Born in 1924 in Plains, Georgia, he was the first U.S. president born in a hospital",ans:"Jimmy Carter"}},
+
+{name:"Around the World & Back",dd:[0,2],cats:[
+ {t:"Where in the World",q:[
+  ["The Great Pyramid of Giza is in this country","Egypt"],
+  ["Mount Everest sits on the border of Nepal and this country","China"],
+  ["This is the only country whose coastline directly meets both the open Atlantic and Indian Oceans","South Africa"],
+  ["The Strait of Gibraltar separates Spain from this African country","Morocco"],
+  ["Thanks to its overseas territories, this country has more time zones than any other","France"]]},
+ {t:"Name That Artist",q:[
+  ["\"Uptown Funk\" and \"24K Magic,\" by a singer born in Honolulu","Bruno Mars"],
+  ["\"Hotline Bling\" and \"God's Plan\"","Drake"],
+  ["\"Dancing Queen\" and \"Mamma Mia\"","ABBA"],
+  ["\"Purple Rain\" and \"When Doves Cry\"","Prince"],
+  ["\"Honolulu City Lights,\" the 1978 Hawaiian classic by these two brothers","Keola and Kapono Beamer (the Beamer Brothers)"]]},
+ {t:"Famous Duos",q:[
+  ["Salt and this","Pepper"],
+  ["Batman's sidekick","Robin"],
+  ["The comedy duo behind the \"Who's on First?\" routine","Abbott and Costello"],
+  ["He and Bill Hewlett started a company in a Palo Alto garage in 1939; their first product was an audio oscillator sold to Disney","David Packard"],
+  ["The Victorian duo who wrote \"The Mikado\" and \"H.M.S. Pinafore\"","Gilbert and Sullivan"]]},
+ {t:"Space & Science",q:[
+  ["The closest star to Earth","The Sun"],
+  ["This gas makes up about 78 percent of the air we breathe","Nitrogen"],
+  ["The first artificial satellite, launched by the Soviet Union in 1957","Sputnik"],
+  ["This planet's moon Titan has lakes of liquid methane","Saturn"],
+  ["This Hawaii-born astronaut from Kona died aboard the Challenger in 1986","Ellison Onizuka"]]},
+ {t:"Tech & Gadgets",q:[
+  ["The \"www\" at the start of a web address stands for this","World Wide Web"],
+  ["This Korean company makes the Galaxy phones","Samsung"],
+  ["The \"QR\" in QR code stands for this","Quick Response"],
+  ["Bluetooth is named after a 10th-century king of this country","Denmark"],
+  ["In 1971 this engineer chose the @ symbol for email addresses","Ray Tomlinson"]]}],
+ final:{cat:"Hawaii in Hollywood",clue:"Elvis Presley's 1961 musical, set in Honolulu with a wedding finale filmed at Kauaʻi's Coco Palms resort, shares its name with a classic song",ans:"Blue Hawaii"}}
+];
+
+const VALUES=[200,400,600,800,1000];
+const KEY="trivia-night-v2";
+let st={game:0,used:{},teams:[{n:"Team 1",s:0},{n:"Team 2",s:0},{n:"Team 3",s:0}]};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.teams)st=s;}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderTabs(){
+  $("tabs").innerHTML=GAMES.map((g,i)=>`<button class="tab" role="tab" aria-selected="${i===st.game}" data-g="${i}">Game ${i+1}: ${esc(g.name)}</button>`).join("");
+  $("tabs").querySelectorAll(".tab").forEach(b=>b.onclick=()=>{st.game=+b.dataset.g;save();render();});
+}
+function renderBoard(){
+  const g=GAMES[st.game];let h=g.cats.map(c=>`<div class="cat">${esc(c.t)}</div>`).join("");
+  VALUES.forEach((v,r)=>g.cats.forEach((c,ci)=>{
+    const k=`${st.game}-${ci}-${r}`,u=st.used[k];
+    h+=`<button class="cell${u?" used":""}" data-c="${ci}" data-r="${r}" ${u?'aria-label="Used"':""}>$${v}</button>`;
+  }));
+  $("board").innerHTML=h;$("board").style.gridTemplateColumns=`repeat(${g.cats.length},minmax(140px,1fr))`;
+  $("board").querySelectorAll(".cell").forEach(b=>b.onclick=()=>{if(!b.classList.contains("used"))openClue(+b.dataset.c,+b.dataset.r);});
+}
+function renderScores(){
+  $("scores").innerHTML=st.teams.map((t,i)=>`<div class="team">
+    <input id="tn${i}" value="${esc(t.n)}" aria-label="Team name">
+    <div class="pts${t.s<0?" neg":""}">${t.s<0?"-":""}$${Math.abs(t.s).toLocaleString()}</div>
+    <div class="row"><button data-i="${i}" data-d="-100">−100</button><button data-i="${i}" data-d="100">+100</button><button data-i="${i}" data-x="1" aria-label="Remove team">✕</button></div></div>`).join("");
+  $("scores").querySelectorAll("input").forEach((inp,i)=>inp.onchange=()=>{st.teams[i].n=inp.value||`Team ${i+1}`;save();});
+  $("scores").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;if(b.dataset.x){if(st.teams.length>1){st.teams.splice(i,1);}}else st.teams[i].s+=+b.dataset.d;save();renderScores();});
+}
+function render(){renderTabs();renderBoard();renderScores();}
+
+function judgeHTML(wagerPerTeam){
+  return `<div class="judge">${st.teams.map((t,i)=>`<div class="t"><span>${esc(t.n)}</span>${wagerPerTeam?`<input class="wager" id="w${i}" type="number" min="0" step="100" placeholder="Wager" aria-label="${esc(t.n)} wager">`:""}<button class="ok" data-i="${i}" aria-label="${esc(t.n)} correct">✓</button><button class="no" data-i="${i}" aria-label="${esc(t.n)} wrong">✗</button></div>`).join("")}</div>`;
+}
+function bindJudge(getAmt){
+  $("ov").querySelectorAll(".judge .ok,.judge .no").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i,a=getAmt(i);if(!a)return;
+    st.teams[i].s+=b.classList.contains("ok")?a:-a;save();renderScores();
+    b.parentElement.style.opacity=.45;
+  });
+}
+function close(){$("ov").hidden=true;$("ov").innerHTML="";renderBoard();}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("ov").hidden)close();});
+
+function openClue(ci,r){
+  const g=GAMES[st.game],c=g.cats[ci],[clue,ans]=c.q[r],v=VALUES[r];
+  const isDD=g.dd[0]===ci&&g.dd[1]===r;
+  st.used[`${st.game}-${ci}-${r}`]=1;save();
+  const ov=$("ov");ov.hidden=false;
+  const show=()=>{
+    ov.innerHTML=`<div class="meta"><span>${esc(c.t)}</span><span>${isDD?"Daily Double":"$"+v}</span></div>
+      <div class="clue">${esc(clue)}</div>
+      <div class="ctrl">
+        <div class="ans" id="ans" hidden>${esc(ans)}</div>
+        <button class="primary" id="reveal" type="button">Show answer</button>
+        <div class="amt"><label for="amt">Points</label><input id="amt" type="number" min="0" step="100" value="${isDD?"":v}" placeholder="${isDD?"Wager":""}"></div>
+        ${judgeHTML(false)}
+        <button id="back" type="button">Back to board</button>
+      </div>`;
+    $("reveal").onclick=()=>{$("ans").hidden=false;$("reveal").hidden=true;};
+    $("back").onclick=close;
+    bindJudge(()=>Math.abs(+$("amt").value||0));
+    (isDD?$("amt"):$("reveal")).focus();
+  };
+  if(isDD){
+    ov.innerHTML=`<div class="meta"><span>${esc(c.t)}</span><span>$${v}</span></div><div class="clue"><div class="dd">Daily Double!</div></div><div class="ctrl"><p class="note">The team in control makes a wager, then hear the clue.</p><button class="primary" id="go" type="button">Show clue</button></div>`;
+    $("go").onclick=show;$("go").focus();
+  } else show();
+}
+
+$("finalBtn").onclick=()=>{
+  const f=GAMES[st.game].final,ov=$("ov");ov.hidden=false;
+  ov.innerHTML=`<div class="meta"><span>Final Jeopardy</span><span>Game ${st.game+1}</span></div>
+    <div class="clue" id="fclue">Category: ${esc(f.cat)}</div>
+    <div class="ctrl">
+      <p class="note" id="fnote">Teams write down their wagers now.</p>
+      <button class="primary" id="fstep" type="button">Show clue</button>
+      <div class="ans" id="fans" hidden>${esc(f.ans)}</div>
+      ${judgeHTML(true)}
+      <button id="back" type="button">Back to board</button>
+    </div>`;
+  let step=0;
+  $("fstep").onclick=()=>{
+    if(step===0){$("fclue").textContent=f.clue;$("fnote").textContent="30 seconds! Teams write their answers.";$("fstep").textContent="Show answer";step=1;}
+    else{$("fans").hidden=false;$("fstep").hidden=true;$("fnote").textContent="Enter each team's wager, then mark right or wrong.";}
+  };
+  $("back").onclick=close;
+  bindJudge(i=>Math.abs(+($("w"+i)||{}).value||0));
+};
+
+$("addTeam").onclick=()=>{st.teams.push({n:`Team ${st.teams.length+1}`,s:0});save();renderScores();};
+function resetHandler(){
+  $("resetWrap").innerHTML=`<span class="note">Clear all scores and boards?</span><button id="yes" type="button">Yes, reset</button><button id="no" type="button">Cancel</button>`;
+  $("yes").onclick=()=>{st.used={};st.teams.forEach(t=>t.s=0);save();render();resetBtn();};
+  $("no").onclick=resetBtn;
+}
+function resetBtn(){$("resetWrap").innerHTML=`<button id="reset" type="button">Reset everything</button>`;$("reset").onclick=resetHandler;}
+$("reset").onclick=resetHandler;
+$("fs").onclick=()=>{try{document.documentElement.requestFullscreen?.().catch(()=>{});}catch(e){}};
+
+// Buzzer panel: shows the host's buzzer page beside the board. The frame is created once and kept alive while hidden.
+const BZ_URL="trivia-buzzer-url",BZ_ON="trivia-buzzer-on";
+const bzGet=k=>{try{return localStorage.getItem(k)||"";}catch(e){return "";}};
+const bzPut=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+function showBuzzer(u){
+  const fr=$("bzFrame");
+  if(fr.dataset.src!==u){fr.src=u;fr.dataset.src=u;}
+  $("bzOpen").href=u;$("bzPanel").hidden=false;document.body.classList.add("bz-on");bzPut(BZ_ON,"1");
+}
+function hideBuzzer(){$("bzPanel").hidden=true;document.body.classList.remove("bz-on");bzPut(BZ_ON,"");}
+$("bzUrl").value=bzGet(BZ_URL);
+$("bzBtn").onclick=()=>{const s=$("bzSetup");s.hidden=!s.hidden;if(!s.hidden)$("bzUrl").focus();};
+$("bzShow").onclick=()=>{
+  let u=$("bzUrl").value.trim();
+  if(u&&!/^https?:\/\//i.test(u))u="https://"+u;
+  try{const p=new URL(u);if(!/^https?:$/.test(p.protocol))throw 0;}catch(e){$("bzMsg").textContent="That doesn't look like a web link. Copy it from the address bar of your buzzer host page.";return;}
+  bzPut(BZ_URL,u);showBuzzer(u);$("bzSetup").hidden=true;
+  $("bzMsg").textContent="If the panel stays blank or doesn't show your host controls, tap “Open in new tab” and put the two windows side by side.";
+};
+$("bzHide").onclick=hideBuzzer;
+if(bzGet(BZ_URL)&&bzGet(BZ_ON))showBuzzer(bzGet(BZ_URL));
+
+// Join screen: QR to buzzin.live/play plus the game code the host types once.
+const QR_CODE="trivia-buzzer-code";
+$("qrCode").value=bzGet(QR_CODE)||"275130";
+$("qrCode").oninput=()=>bzPut(QR_CODE,$("qrCode").value);
+$("qrBtn").onclick=()=>{$("qrOv").hidden=false;$("qrClose").focus();};
+$("qrClose").onclick=()=>{$("qrOv").hidden=true;};
+$("qrOv").onclick=e=>{if(e.target===$("qrOv"))$("qrOv").hidden=true;};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("qrOv").hidden)$("qrOv").hidden=true;});
+
+render();
+</script>
+
+</body></html>
